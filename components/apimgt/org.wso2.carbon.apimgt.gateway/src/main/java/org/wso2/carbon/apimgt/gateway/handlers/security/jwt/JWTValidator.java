@@ -81,12 +81,14 @@ public class JWTValidator {
     private boolean isGatewayTokenCacheEnabled;
     private APIKeyValidator apiKeyValidator;
     private boolean jwtGenerationEnabled;
+    private boolean disableSubscriptionValidation;
     private AbstractAPIMgtGatewayJWTGenerator apiMgtGatewayJWTGenerator;
     ExtendedJWTConfigurationDto jwtConfigurationDto;
     JWTValidationService jwtValidationService;
     private static volatile long ttl = -1L;
 
-    public JWTValidator(APIKeyValidator apiKeyValidator, String tenantDomain) throws APIManagementException {
+    public JWTValidator(APIKeyValidator apiKeyValidator, String tenantDomain, boolean disableSubscriptionValidation)
+            throws APIManagementException {
         int tenantId = APIUtil.getTenantIdFromTenantDomain(tenantDomain);
         this.isGatewayTokenCacheEnabled = GatewayUtils.isGatewayTokenCacheEnabled();
         this.apiKeyValidator = apiKeyValidator;
@@ -116,6 +118,7 @@ public class JWTValidator {
         }
 
         jwtValidationService = ServiceReferenceHolder.getInstance().getJwtValidationService();
+        this.disableSubscriptionValidation = disableSubscriptionValidation;
     }
 
     protected JWTValidator(String apiLevelPolicy, boolean isGatewayTokenCacheEnabled,
@@ -254,23 +257,28 @@ public class JWTValidator {
                 // Validate subscriptions
                 APIKeyValidationInfoDTO apiKeyValidationInfoDTO;
 
-                log.debug("Begin subscription validation via Key Manager: " + jwtValidationInfo.getKeyManager());
-                apiKeyValidationInfoDTO = validateSubscriptionUsingKeyManager(synCtx, jwtValidationInfo);
-                synCtx.setProperty(
-                        APIMgtGatewayConstants.APPLICATION_NAME, apiKeyValidationInfoDTO.getApplicationName()
-                );
-                synCtx.setProperty(APIMgtGatewayConstants.END_USER_NAME, apiKeyValidationInfoDTO.getEndUserName());
+                if (!disableSubscriptionValidation) {
+                    log.debug("Begin subscription validation via Key Manager: " + jwtValidationInfo.getKeyManager());
+                    apiKeyValidationInfoDTO = validateSubscriptionUsingKeyManager(synCtx, jwtValidationInfo);
+                    synCtx.setProperty(
+                            APIMgtGatewayConstants.APPLICATION_NAME, apiKeyValidationInfoDTO.getApplicationName()
+                    );
+                    synCtx.setProperty(APIMgtGatewayConstants.END_USER_NAME, apiKeyValidationInfoDTO.getEndUserName());
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Subscription validation via Key Manager. Status: "
-                            + apiKeyValidationInfoDTO.isAuthorized());
-                }
-                if (!apiKeyValidationInfoDTO.isAuthorized()) {
-                    log.debug(
-                            "User is NOT authorized to access the Resource. API Subscription validation failed.");
-                    throw new APISecurityException(apiKeyValidationInfoDTO.getValidationStatus(),
-                            "User is NOT authorized to access the Resource. API Subscription validation failed.");
+                    if (log.isDebugEnabled()) {
+                        log.debug("Subscription validation via Key Manager. Status: "
+                                + apiKeyValidationInfoDTO.isAuthorized());
+                    }
+                    if (!apiKeyValidationInfoDTO.isAuthorized()) {
+                        log.debug(
+                                "User is NOT authorized to access the Resource. API Subscription validation failed.");
+                        throw new APISecurityException(apiKeyValidationInfoDTO.getValidationStatus(),
+                                "User is NOT authorized to access the Resource. API Subscription validation failed.");
 
+                    }
+                } else {
+                    log.debug("Subscription validation is disabled.");
+                    apiKeyValidationInfoDTO = populateValidationInfoDTO(synCtx, jwtValidationInfo);
                 }
                 // Validate scopes
                 validateScopes(apiContext, apiVersion, matchingResource, httpMethod, jwtValidationInfo, signedJWTInfo);
@@ -285,7 +293,7 @@ public class JWTValidator {
                     synCtx.setProperty(APIMgtGatewayConstants.API_PUBLISHER, apiKeyValidationInfoDTO.getApiPublisher());
                     synCtx.setProperty("API_NAME", apiKeyValidationInfoDTO.getApiName());
                     /* GraphQL Query Analysis Information */
-                    if (APIConstants.GRAPHQL_API.equals(synCtx.getProperty(APIConstants.API_TYPE))) {
+                    if (APIConstants.GRAPHQL_API.equals(synCtx.getProperty(APIConstants.API_TYPE)) && !disableSubscriptionValidation) {
                         synCtx.setProperty(GraphQLConstants.MAXIMUM_QUERY_DEPTH,
                                 apiKeyValidationInfoDTO.getGraphQLMaxDepth());
                         synCtx.setProperty(GraphQLConstants.MAXIMUM_QUERY_COMPLEXITY,
@@ -393,6 +401,20 @@ public class JWTValidator {
         if (jwtValidationInfo != null && jwtValidationInfo.getClaims() != null) {
             jwtValidationInfo.getClaims().putAll(userClaimsFromKeyManager);
         }
+    }
+
+    private APIKeyValidationInfoDTO populateValidationInfoDTO(MessageContext synCtx, JWTValidationInfo jwtValidationInfo)
+            throws APISecurityException {
+
+        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
+        String apiContext = (String) synCtx.getProperty(RESTConstants.REST_API_CONTEXT);
+        String apiVersion = (String) synCtx.getProperty(RESTConstants.SYNAPSE_REST_API_VERSION);
+        String keyManager = jwtValidationInfo.getKeyManager();
+        APIKeyValidationInfoDTO apiKeyValidationInfoDTO = apiKeyValidator
+                .populateValidationInfoDTO(apiContext, apiVersion, keyManager, tenantDomain);
+        apiKeyValidationInfoDTO.setEndUserName(jwtValidationInfo.getUser());
+        apiKeyValidationInfoDTO.setSubscriber(jwtValidationInfo.getUser());
+        return apiKeyValidationInfoDTO;
     }
 
     private APIKeyValidationInfoDTO validateSubscriptionUsingKeyManager(MessageContext synCtx,

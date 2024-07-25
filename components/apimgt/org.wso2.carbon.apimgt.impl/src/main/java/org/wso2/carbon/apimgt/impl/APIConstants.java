@@ -488,6 +488,8 @@ public final class APIConstants {
     public static final String REMOVE_OAUTH_HEADER_FROM_OUT_MESSAGE = "RemoveOAuthHeadersFromOutMessage";
     public static final String REMOVE_OAUTH_HEADER_FROM_OUT_MESSAGE_DEFAULT = "true";
     public static final String REMOVE_OAUTH_HEADERS_FROM_MESSAGE = OAUTH_CONFIGS + "RemoveOAuthHeadersFromOutMessage";
+    public static final String DISABLE_SUBSCRIPTION_VALIDATION_PROPERTY = "disable_sub_validation";
+    public static final String DISABLE_SUBSCRIPTION_VALIDATION = "DisableSubscriptionValidation";
     public static final String APPLICATION_TOKEN_SCOPE = OAUTH_CONFIGS + "ApplicationTokenScope";
     public static final String ALLOWED_SCOPES = OAUTH_CONFIGS + "AllowedScopes.Scope";
     public static final String TOKEN_ENDPOINT_NAME = OAUTH_CONFIGS + "TokenEndPointName";

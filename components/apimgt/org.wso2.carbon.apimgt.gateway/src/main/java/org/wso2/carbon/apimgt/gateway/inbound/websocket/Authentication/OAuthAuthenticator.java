@@ -145,7 +145,7 @@ public class OAuthAuthenticator implements Authenticator {
                 if (inboundMessageContext.isJWTToken()) {
                     log.debug("Authentication started for JWT tokens");
                     JWTValidator jwtValidator = new JWTValidator(new APIKeyValidator(),
-                            inboundMessageContext.getTenantDomain());
+                            inboundMessageContext.getTenantDomain(), false);
                     AuthenticationContext authenticationContext;
                     String matchingResources = validateScopes ? inboundMessageContext.getMatchingResource() : null;
                     authenticationContext = jwtValidator.

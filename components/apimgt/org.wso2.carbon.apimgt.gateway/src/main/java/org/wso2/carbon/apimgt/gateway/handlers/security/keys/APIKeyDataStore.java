@@ -127,4 +127,7 @@ public interface APIKeyDataStore {
     void cleanup();
 
     Map<String, Scope> retrieveScopes(String tenantDomain);
+
+    APIKeyValidationInfoDTO populateValidationInfoDTO(String context, String version, String keyManager, String tenantDomain)
+            throws APISecurityException;
 }

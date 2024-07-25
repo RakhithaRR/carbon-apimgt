@@ -748,6 +748,11 @@ public class APIKeyValidator {
         return dataStore.validateSubscription(context, version, appID,tenantDomain);
     }
 
+    public APIKeyValidationInfoDTO populateValidationInfoDTO(String context, String version, String keyManager,
+                                                      String tenantDomain) throws APISecurityException {
+        return dataStore.populateValidationInfoDTO(context, version, keyManager, tenantDomain);
+    }
+
     /**
      * Validate scopes bound to the resource of the API being invoked against the scopes of the token.
      *

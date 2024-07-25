@@ -124,7 +124,7 @@ public class InboundWebsocketProcessorUtil {
                                                              InboundMessageContext inboundMessageContext)
             throws APIManagementException, APISecurityException {
 
-        JWTValidator jwtValidator = new JWTValidator(new APIKeyValidator(), inboundMessageContext.getTenantDomain());
+        JWTValidator jwtValidator = new JWTValidator(new APIKeyValidator(), inboundMessageContext.getTenantDomain(), false);
         jwtValidator.validateScopesForGraphQLSubscriptions(inboundMessageContext.getApiContext(),
                 inboundMessageContext.getVersion(), matchingResource, inboundMessageContext.getSignedJWTInfo(),
                 inboundMessageContext.getAuthContext());

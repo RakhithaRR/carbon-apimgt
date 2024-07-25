@@ -56,6 +56,8 @@ public interface KeyValidationHandler {
      */
     APIKeyValidationInfoDTO validateSubscription(String apiContext, String apiVersion, int appId);
 
+    APIKeyValidationInfoDTO populateValidationInfoDTO(String context, String version, String keyManager);
+
     /**
      * Validate Scopes  by oAuth2TokenValidationMessageContext
      *

@@ -99,6 +99,7 @@ public class APIAuthenticationHandler extends AbstractHandler implements Managed
     private String apiLevelPolicy;
     private String certificateInformation;
     private String apiUUID;
+    private boolean disableSubscriptionValidation;
     private String apiType = String.valueOf(APIConstants.ApiTypes.API); // Default API Type
     private OpenAPI openAPI;
     private String keyManagers;
@@ -218,6 +219,24 @@ public class APIAuthenticationHandler extends AbstractHandler implements Managed
      */
     public void setApiKeyHeader(String apiKeyHeader) {
         this.apiKeyHeader = apiKeyHeader;
+    }
+
+    /**
+     * To set the subscription validation status.
+     *
+     * @return Subscription validation status.
+     */
+    public boolean getDisableSubscriptionValidation() {
+        return disableSubscriptionValidation;
+    }
+
+    /**
+     * To set the subscription validation status.
+     *
+     * @param disableSubscriptionValidation Subscription validation status.
+     */
+    public void setDisableSubscriptionValidation(boolean disableSubscriptionValidation) {
+        this.disableSubscriptionValidation = disableSubscriptionValidation;
     }
 
     /**
@@ -343,7 +362,7 @@ public class APIAuthenticationHandler extends AbstractHandler implements Managed
         }
         if (isOAuthProtected) {
             Authenticator authenticator = new OAuthAuthenticator(authorizationHeader, isOAuthBasicAuthMandatory,
-                    removeOAuthHeadersFromOutMessage);
+                    removeOAuthHeadersFromOutMessage, disableSubscriptionValidation);
             authenticator.init(synapseEnvironment);
             authenticators.add(authenticator);
         }

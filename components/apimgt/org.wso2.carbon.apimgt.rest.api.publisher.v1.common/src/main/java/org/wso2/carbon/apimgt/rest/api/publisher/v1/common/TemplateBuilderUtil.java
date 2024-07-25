@@ -226,6 +226,14 @@ public class TemplateBuilderUtil {
             authProperties.put(APIConstants.REMOVE_OAUTH_HEADER_FROM_OUT_MESSAGE,
                     APIConstants.REMOVE_OAUTH_HEADER_FROM_OUT_MESSAGE_DEFAULT);
         }
+        // Add subscription validation property to the handler
+        JSONObject additionalProperties = api.getAdditionalProperties();
+        if (additionalProperties != null) {
+            boolean subscriptionValidationDisabled = Boolean.parseBoolean(
+                    (String) additionalProperties.get(APIConstants.DISABLE_SUBSCRIPTION_VALIDATION_PROPERTY));
+            authProperties.put(APIConstants.DISABLE_SUBSCRIPTION_VALIDATION,
+                    String.valueOf(subscriptionValidationDisabled));
+        }
         authProperties.put(APIConstants.API_UUID, api.getUUID());
         authProperties.put("keyManagers", String.join(",", api.getKeyManagers()));
         if (APIConstants.GRAPHQL_API.equals(api.getType())) {

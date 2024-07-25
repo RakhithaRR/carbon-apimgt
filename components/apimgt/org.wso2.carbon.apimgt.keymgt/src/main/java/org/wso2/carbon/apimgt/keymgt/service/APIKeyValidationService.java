@@ -514,6 +514,13 @@ public class APIKeyValidationService {
         return keyValidationHandler.validateSubscription(context, version, appId);
     }
 
+    public APIKeyValidationInfoDTO populateValidationInfoDTO(String context, String version, String keyManager,
+                                                      String tenantDomain) throws APIKeyMgtException {
+        KeyValidationHandler keyValidationHandler = ServiceReferenceHolder
+                .getInstance().getKeyValidationHandler(tenantDomain);
+        return keyValidationHandler.populateValidationInfoDTO(context, version, keyManager);
+    }
+
     public Map<String, Scope> retrieveScopes(String tenantDomain) {
 
         SubscriptionDataStore subscriptionDataStore =

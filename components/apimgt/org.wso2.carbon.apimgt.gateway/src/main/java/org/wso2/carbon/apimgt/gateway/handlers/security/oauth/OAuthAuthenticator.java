@@ -83,15 +83,18 @@ public class OAuthAuthenticator implements Authenticator {
     private boolean removeDefaultAPIHeaderFromOutMessage = true;
     private String requestOrigin;
     private boolean isMandatory;
+    private boolean disableSubscriptionValidation = false;
     private ThreadLocal<String> remainingAuthHeader = new ThreadLocal<String>();
 
     public OAuthAuthenticator() {
     }
 
-    public OAuthAuthenticator(String authorizationHeader, boolean isMandatory, boolean removeOAuthHeader) {
+    public OAuthAuthenticator(String authorizationHeader, boolean isMandatory, boolean removeOAuthHeader,
+                              boolean disableSubscriptionValidation) {
         this.securityHeader = authorizationHeader;
         this.removeOAuthHeadersFromOutMessage = removeOAuthHeader;
         this.isMandatory = isMandatory;
+        this.disableSubscriptionValidation = disableSubscriptionValidation;
     }
 
     public void init(SynapseEnvironment env) {
@@ -118,7 +121,7 @@ public class OAuthAuthenticator implements Authenticator {
         }
 
         if (jwtValidator == null) {
-            this.jwtValidator = new JWTValidator(this.keyValidator, tenantDomain);
+            this.jwtValidator = new JWTValidator(this.keyValidator, tenantDomain, disableSubscriptionValidation);
         }
 
         config = getApiManagerConfiguration();

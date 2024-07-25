@@ -89,6 +89,18 @@ public class APIKeyValidatorClient {
         }
     }
 
+    public APIKeyValidationInfoDTO populateValidationInfoDTO(String context, String version, String keyManager,
+                                                      String tenantDomain) throws APISecurityException {
+        try {
+            return apiKeyValidationService.populateValidationInfoDTO(context, version, keyManager, tenantDomain);
+        } catch (APIKeyMgtException e) {
+            log.error("Error while validating API data", e);
+            throw new APISecurityException(APISecurityConstants.API_AUTH_GENERAL_ERROR,
+                    "Error while accessing in-memory store for validation", e);
+        }
+
+    }
+
     public boolean validateScopes(TokenValidationContext tokenValidationContext, String tenantDomain)
             throws APISecurityException {
 

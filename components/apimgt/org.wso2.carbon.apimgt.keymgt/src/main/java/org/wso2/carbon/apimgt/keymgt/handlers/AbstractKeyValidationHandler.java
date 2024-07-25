@@ -619,6 +619,57 @@ public abstract class AbstractKeyValidationHandler implements KeyValidationHandl
         infoDTO.setAuthorized(true);
         return infoDTO;
     }
+
+    public APIKeyValidationInfoDTO populateValidationInfoDTO(String context, String version, String keyManager) {
+        APIKeyValidationInfoDTO infoDTO = new APIKeyValidationInfoDTO();
+        String apiTenantDomain = MultitenantUtils.getTenantDomainFromRequestURL(context);
+        if (apiTenantDomain == null) {
+            apiTenantDomain = MultitenantConstants.SUPER_TENANT_DOMAIN_NAME;
+        }
+        int tenantId = APIUtil.getTenantIdFromTenantDomain(apiTenantDomain);
+        API api = null;
+        SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance()
+                .getTenantSubscriptionStore(apiTenantDomain);
+        if (datastore != null) {
+            api = datastore.getApiByContextAndVersion(context, version);
+            if (api != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("All information is retrieved from the in-memory data store.");
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("API not found in the datastore for " + context + ":" + version);
+                }
+            }
+        } else {
+            log.error("Subscription datastore is not initialized for tenant domain " + apiTenantDomain);
+        }
+
+        if (api != null) {
+            infoDTO.setApiName(api.getApiName());
+            infoDTO.setApiVersion(api.getApiVersion());
+            infoDTO.setApiPublisher(api.getApiProvider());
+        } else {
+            infoDTO.setAuthorized(false);
+            infoDTO.setValidationStatus(APIConstants.KeyValidationStatus.API_AUTH_RESOURCE_FORBIDDEN);
+            return infoDTO;
+        }
+
+        ApiPolicy apiPolicy = datastore.getApiPolicyByName(api.getApiTier(), tenantId);
+        boolean isContentAware = apiPolicy != null && apiPolicy.isContentAware();
+        infoDTO.setContentAware(isContentAware);
+        if (api.getApiTier() != null && api.getApiTier().trim().length() > 0) {
+            infoDTO.setApiTier(api.getApiTier());
+        }
+
+        String apiLevelThrottlingKey = "api_level_throttling_key";
+        List<String> list = new ArrayList<>();
+        list.add(apiLevelThrottlingKey);
+        infoDTO.setThrottlingDataList(list);
+
+        infoDTO.setAuthorized(true);
+        return infoDTO;
+    }
     protected long getTimeStampSkewInSeconds() {
 
         return OAuthServerConfiguration.getInstance().getTimeStampSkewInSeconds();
