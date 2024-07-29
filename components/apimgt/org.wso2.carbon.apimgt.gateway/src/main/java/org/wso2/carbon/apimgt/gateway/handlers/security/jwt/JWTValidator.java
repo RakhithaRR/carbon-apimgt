@@ -414,6 +414,12 @@ public class JWTValidator {
                 .populateValidationInfoDTO(apiContext, apiVersion, keyManager, tenantDomain);
         apiKeyValidationInfoDTO.setEndUserName(jwtValidationInfo.getUser());
         apiKeyValidationInfoDTO.setSubscriber(jwtValidationInfo.getUser());
+        // Add properties required for analytics
+        apiKeyValidationInfoDTO.setConsumerKey(jwtValidationInfo.getConsumerKey());
+        apiKeyValidationInfoDTO.setApplicationId(APIConstants.SUBSCRIPTIONLESS_APPLICATION_NAME);
+        apiKeyValidationInfoDTO.setApplicationUUID(APIConstants.SUBSCRIPTIONLESS_APPLICATION_NAME);
+        apiKeyValidationInfoDTO.setApplicationName(APIConstants.SUBSCRIPTIONLESS_APPLICATION_NAME);
+        apiKeyValidationInfoDTO.setType(APIConstants.API_KEY_TYPE_PRODUCTION);
         return apiKeyValidationInfoDTO;
     }
 

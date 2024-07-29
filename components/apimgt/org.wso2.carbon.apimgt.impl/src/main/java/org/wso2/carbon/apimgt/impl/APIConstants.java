@@ -974,6 +974,7 @@ public final class APIConstants {
     public static final String BASIC_AUTH_APPLICATION_OWNER = " BasicAuthApplicationOwner";
     public static final String MUTUAL_SSL_AUTH_APPLICATION_NAME = "MutualSSLAuthApplication";
     public static final String MUTUAL_SSL_AUTH_APPLICATION_OWNER = "MutualSSLAuthApplicationOwner";
+    public static final String SUBSCRIPTIONLESS_APPLICATION_NAME = "SubscriptionlessApplication";
 
     public static final QName POLICY_ELEMENT = new QName("http://schemas.xmlsoap.org/ws/2004/09/policy",
             "Policy");
